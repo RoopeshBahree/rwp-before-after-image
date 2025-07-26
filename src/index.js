@@ -11,6 +11,7 @@ import { registerBlockType } from '@wordpress/blocks';
 import Edit from './edit';
 import save from './save';
 import metadata from './block.json';
+import './style.scss';
 
 /**
  * Define a custom SVG icon for the block. This icon will appear in

@@ -1,48 +1,56 @@
-import { MediaUpload, MediaUploadCheck } from '@wordpress/block-editor';
-
+import { useBlockProps, MediaUpload, MediaUploadCheck } from '@wordpress/block-editor';
 import { Button } from '@wordpress/components';
+import { useEffect, useRef } from '@wordpress/element';
+import 'beerslider/dist/BeerSlider.css'; // Import BeerSlider CSS
+import BeerSlider from 'beerslider';
 
-import { __ } from '@wordpress/i18n';
-
-export default function Edit( { attributes, setAttributes } ) {
+export default function Edit({ attributes, setAttributes }) {
 	const { beforeImageUrl, afterImageUrl } = attributes;
+	const sliderRef = useRef(null);
+	const blockProps = useBlockProps({ className: 'rwp-before-after-block' });
 
-	// Get before image url.
-	const onSelectBeforeImageUrl = (media) => {
-		setAttributes({ beforeImageUrl: media.url });
-	};
+	useEffect(() => {
+		if (sliderRef.current && beforeImageUrl && afterImageUrl) {
+			new BeerSlider(sliderRef.current);
+		}
+	}, [beforeImageUrl, afterImageUrl]);
 
-	// Get after image url.
-	const onSelectAfterImageUrl = (media) => {
-		setAttributes({ afterImageUrl: media.url });
-	};
-	
+	const onBeforeSelect = (media) => setAttributes({ beforeImageUrl: media.url });
+	const onAfterSelect = (media) => setAttributes({ afterImageUrl: media.url });
+
 	return (
 		<div {...blockProps}>
-			<MediaUploadCheck>
-				<MediaUpload
-					onSelect={onSelectBeforeImageUrl}
-					allowedTypes={['image']}
-					render={({ open }) => (
-						<Button onClick={open}	variant='secondary'>
-							{ beforeImageUrl ? 'Change before Image' : 'Upload Before Image' }
-						</Button>
-					)}
-				/>
-			</MediaUploadCheck>
-			{beforeImageUrl && <img src={beforeImageUrl} alt="Before" style={{ maxwidth: '100%' }} />}
-			<MediaUploadCheck>
-				<MediaUpload
-					onSelect={onSelectAfterImageUrl}
-					allowedTypes={['image']}
-					render={({ open }) => (
-						<Button onClick={open} variant='secondary'>
-							{ afterImageUrl ? 'Change after Image' : 'Upload After Image' }
-						</Button>
-					)}
-				/>
-			</MediaUploadCheck>
-			{afterImageUrl && <img src={afterImageUrl} alt='After' style={{ maxwidth: '100%' }} /> }
+			<div className="rwp-controls">
+				<MediaUploadCheck>
+					<MediaUpload
+						onSelect={onBeforeSelect}
+						allowedTypes={['image']}
+						render={({ open }) => (
+							<Button onClick={open} variant="secondary" style={{ marginRight: '10px' }}>
+								{beforeImageUrl ? 'Change Before Image' : 'Upload Before Image'}
+							</Button>
+						)}
+					/>
+					<MediaUpload
+						onSelect={onAfterSelect}
+						allowedTypes={['image']}
+						render={({ open }) => (
+							<Button onClick={open} variant="secondary">
+								{afterImageUrl ? 'Change After Image' : 'Upload After Image'}
+							</Button>
+						)}
+					/>
+				</MediaUploadCheck>
+			</div>
+
+			{beforeImageUrl && afterImageUrl && (
+				<div ref={sliderRef} className="beer-slider" data-beer-label="Before">
+					<img src={afterImageUrl} alt="After" />
+					<div className="beer-reveal" data-beer-label="After">
+						<img src={beforeImageUrl} alt="Before" />
+					</div>
+				</div>
+			)}
 		</div>
 	);
 }
